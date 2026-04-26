@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Coffee, Settings, LayoutDashboard } from "lucide-react";
+import { Coffee, LayoutDashboard } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 
 export function StaffLayout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -13,16 +14,14 @@ export function StaffLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row">
       <aside className="w-full md:w-64 bg-card border-l border-border flex flex-col shrink-0">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground">
-            <Coffee className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-foreground font-sans">مؤمن</h1>
-            <p className="text-xs text-muted-foreground">MO2men Coffee</p>
+        <div className="p-4 md:p-6 flex items-center gap-3 justify-center md:justify-start">
+          <BrandLogo size={44} />
+          <div className="text-center md:text-right">
+            <h1 className="text-lg md:text-xl font-bold text-foreground font-sans leading-tight">ألسن كوفي</h1>
+            <p className="text-xs text-muted-foreground tracking-wider">Alson Coffee</p>
           </div>
         </div>
-        
+
         <nav className="flex-1 px-4 pb-4 flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible">
           {navItems.map((item) => {
             const active = location.startsWith(item.href);

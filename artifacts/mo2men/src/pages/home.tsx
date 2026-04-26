@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Coffee } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -27,13 +27,12 @@ export default function Home() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="w-full flex flex-col items-center text-center z-10 space-y-8"
       >
-        <div className="w-24 h-24 bg-primary text-primary-foreground rounded-3xl flex items-center justify-center shadow-lg shadow-primary/20 rotate-3">
-          <Coffee className="w-12 h-12 -rotate-3" />
-        </div>
-        
-        <div className="space-y-3">
-          <h1 className="text-4xl font-bold text-foreground font-sans tracking-tight">مرحباً بك في مؤمن</h1>
-          <p className="text-lg text-muted-foreground font-medium">القهوة تُصنع بحب. اختر طاولتك للبدء.</p>
+        <BrandLogo size={104} className="shadow-lg shadow-primary/20 rounded-3xl" />
+
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold text-foreground font-sans tracking-tight">مرحباً بك في ألسن كوفي</h1>
+          <p className="text-sm uppercase tracking-[0.3em] text-primary font-bold">Alson Coffee</p>
+          <p className="text-lg text-muted-foreground font-medium pt-2">القهوة تُصنع بحب. اختر طاولتك للبدء.</p>
         </div>
 
         <div className="w-full space-y-4 bg-card p-6 rounded-3xl border border-border shadow-sm">

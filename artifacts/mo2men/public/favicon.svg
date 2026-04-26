@@ -1,3 +1,18 @@
-<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E5A53D"/>
+      <stop offset="0.55" stop-color="#C8851F"/>
+      <stop offset="1" stop-color="#8C5A12"/>
+    </linearGradient>
+    <linearGradient id="b" x1="60" y1="40" x2="140" y2="170" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3A1F0E"/>
+      <stop offset="1" stop-color="#1A0E07"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="188" height="188" rx="44" fill="url(#g)"/>
+  <g transform="translate(100 100) rotate(-22)">
+    <ellipse cx="0" cy="0" rx="46" ry="62" fill="url(#b)"/>
+    <path d="M -2 -56 C 14 -28 14 28 -2 56" stroke="#E5A53D" stroke-width="5" stroke-linecap="round" fill="none"/>
+  </g>
 </svg>

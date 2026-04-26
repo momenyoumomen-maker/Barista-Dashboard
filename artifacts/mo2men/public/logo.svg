@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E5A53D"/>
+      <stop offset="0.55" stop-color="#C8851F"/>
+      <stop offset="1" stop-color="#8C5A12"/>
+    </linearGradient>
+    <linearGradient id="beanGrad" x1="60" y1="40" x2="140" y2="170" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3A1F0E"/>
+      <stop offset="1" stop-color="#1A0E07"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="6" y="6" width="188" height="188" rx="44" fill="url(#goldGrad)"/>
+  <rect x="6" y="6" width="188" height="188" rx="44" fill="none" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2"/>
+
+  <g transform="translate(100 100) rotate(-22)">
+    <ellipse cx="0" cy="0" rx="46" ry="62" fill="url(#beanGrad)"/>
+    <path d="M -2 -56 C 14 -28 14 28 -2 56" stroke="#E5A53D" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.92"/>
+    <path d="M -2 -56 C 14 -28 14 28 -2 56" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.5"/>
+  </g>
+
+  <g opacity="0.85">
+    <path d="M 78 36 C 72 28 86 26 80 18" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M 100 32 C 94 24 108 22 102 14" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M 122 36 C 116 28 130 26 124 18" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="3" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>
