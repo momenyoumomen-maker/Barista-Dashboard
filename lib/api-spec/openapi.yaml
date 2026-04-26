@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: MO2men Coffee Shop API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: menu
+    description: Menu items
+  - name: orders
+    description: Customer orders
+  - name: stats
+    description: Live shop statistics
 paths:
   /healthz:
     get:
@@ -24,6 +30,259 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /menu:
+    get:
+      operationId: listMenu
+      tags: [menu]
+      summary: List all menu items
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: availableOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of menu items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuItem"
+    post:
+      operationId: createMenuItem
+      tags: [menu]
+      summary: Create a new menu item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MenuItemInput"
+      responses:
+        "201":
+          description: Created menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+
+  /menu/{id}:
+    patch:
+      operationId: updateMenuItem
+      tags: [menu]
+      summary: Update a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MenuItemUpdate"
+      responses:
+        "200":
+          description: Updated menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+    delete:
+      operationId: deleteMenuItem
+      tags: [menu]
+      summary: Delete a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /menu/categories:
+    get:
+      operationId: listCategories
+      tags: [menu]
+      summary: List menu categories with item counts
+      responses:
+        "200":
+          description: Categories with counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryCount"
+
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List orders, optionally filtered by status
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, preparing, ready, served, cancelled]
+        - name: activeOnly
+          in: query
+          required: false
+          description: Only orders that are not served or cancelled
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Place a new order from a table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Created order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      summary: Get a single order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+    patch:
+      operationId: updateOrderStatus
+      tags: [orders]
+      summary: Update order status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderStatusUpdate"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /orders/by-table/{tableNumber}:
+    get:
+      operationId: listOrdersByTable
+      tags: [orders]
+      summary: Get all active orders for a specific table
+      parameters:
+        - name: tableNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Active orders for the table
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  /stats/today:
+    get:
+      operationId: getTodayStats
+      tags: [stats]
+      summary: Get today's shop statistics
+      responses:
+        "200":
+          description: Today's stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodayStats"
+
+  /stats/popular:
+    get:
+      operationId: getPopularItems
+      tags: [stats]
+      summary: Get most-ordered menu items today
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 5
+      responses:
+        "200":
+          description: Popular items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PopularItem"
+
+  /stats/queue:
+    get:
+      operationId: getQueueSummary
+      tags: [stats]
+      summary: Live queue summary for the barista dashboard
+      responses:
+        "200":
+          description: Queue counts and oldest waiting time
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +293,234 @@ components:
       required:
         - status
 
+    MenuItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          description: Item name in Arabic
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        imageUrl:
+          type: string
+        available:
+          type: boolean
+        prepMinutes:
+          type: integer
+          description: Estimated preparation minutes
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - category
+        - price
+        - available
+        - prepMinutes
+        - createdAt
+
+    MenuItemInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        imageUrl:
+          type: string
+        available:
+          type: boolean
+        prepMinutes:
+          type: integer
+      required:
+        - name
+        - category
+        - price
+
+    MenuItemUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        imageUrl:
+          type: string
+        available:
+          type: boolean
+        prepMinutes:
+          type: integer
+
+    CategoryCount:
+      type: object
+      properties:
+        category:
+          type: string
+        count:
+          type: integer
+      required:
+        - category
+        - count
+
+    OrderItem:
+      type: object
+      properties:
+        menuItemId:
+          type: integer
+        name:
+          type: string
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+        notes:
+          type: string
+      required:
+        - menuItemId
+        - name
+        - quantity
+        - unitPrice
+
+    OrderItemInput:
+      type: object
+      properties:
+        menuItemId:
+          type: integer
+        quantity:
+          type: integer
+        notes:
+          type: string
+      required:
+        - menuItemId
+        - quantity
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        tableNumber:
+          type: integer
+        customerName:
+          type: string
+        status:
+          type: string
+          enum: [pending, preparing, ready, served, cancelled]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        totalPrice:
+          type: number
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tableNumber
+        - status
+        - items
+        - totalPrice
+        - createdAt
+        - updatedAt
+
+    OrderInput:
+      type: object
+      properties:
+        tableNumber:
+          type: integer
+        customerName:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItemInput"
+        notes:
+          type: string
+      required:
+        - tableNumber
+        - items
+
+    OrderStatusUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, preparing, ready, served, cancelled]
+      required:
+        - status
+
+    TodayStats:
+      type: object
+      properties:
+        ordersCount:
+          type: integer
+        revenue:
+          type: number
+        activeOrders:
+          type: integer
+        averagePrepMinutes:
+          type: number
+        servedOrders:
+          type: integer
+      required:
+        - ordersCount
+        - revenue
+        - activeOrders
+        - averagePrepMinutes
+        - servedOrders
+
+    PopularItem:
+      type: object
+      properties:
+        menuItemId:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        quantitySold:
+          type: integer
+      required:
+        - menuItemId
+        - name
+        - category
+        - quantitySold
+
+    QueueSummary:
+      type: object
+      properties:
+        pending:
+          type: integer
+        preparing:
+          type: integer
+        ready:
+          type: integer
+        oldestWaitingSeconds:
+          type: integer
+          description: How long the oldest non-served order has been waiting
+      required:
+        - pending
+        - preparing
+        - ready
+        - oldestWaitingSeconds
