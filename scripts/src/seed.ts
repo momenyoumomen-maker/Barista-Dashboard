@@ -1,4 +1,4 @@
-import { db, menuItemsTable, ordersTable } from "@workspace/db";
+import { db, menuItemsTable } from "@workspace/db";
 
 const items = [
   {
@@ -132,52 +132,6 @@ async function main() {
 
   const inserted = await db.insert(menuItemsTable).values(items).returning();
   console.log(`Inserted ${inserted.length} menu items.`);
-
-  const sample = inserted.slice(0, 3);
-  if (sample.length >= 2) {
-    await db.insert(ordersTable).values([
-      {
-        tableNumber: 4,
-        customerName: "أحمد",
-        status: "preparing",
-        items: [
-          {
-            menuItemId: sample[0].id,
-            name: sample[0].name,
-            quantity: 1,
-            unitPrice: Number(sample[0].price),
-          },
-          {
-            menuItemId: sample[1].id,
-            name: sample[1].name,
-            quantity: 2,
-            unitPrice: Number(sample[1].price),
-          },
-        ],
-        totalPrice: (
-          Number(sample[0].price) +
-          Number(sample[1].price) * 2
-        ).toFixed(2),
-      },
-      {
-        tableNumber: 7,
-        customerName: "منى",
-        status: "pending",
-        items: [
-          {
-            menuItemId: sample[2].id,
-            name: sample[2].name,
-            quantity: 1,
-            unitPrice: Number(sample[2].price),
-            notes: "بدون سكر",
-          },
-        ],
-        totalPrice: Number(sample[2].price).toFixed(2),
-        notes: "حساسية من اللاكتوز",
-      },
-    ]);
-    console.log("Inserted 2 sample orders.");
-  }
 }
 
 main()
