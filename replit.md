@@ -1,8 +1,8 @@
-# MO2men Coffee Shop
+# Alson Coffee Shop
 
 ## Overview
 
-Real-time order management system for "مؤمن / MO2men" coffee shop.
+Real-time order management system for "ألسن كوفي / Alson Coffee" coffee shop.
 Customers pick a table and order from the menu; baristas see orders live on a Kanban-style dashboard and advance their status.
 Includes an admin view with today's stats, top-selling items, and full menu CRUD.
 
