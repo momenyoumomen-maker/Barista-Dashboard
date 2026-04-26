@@ -19,8 +19,37 @@ import {
   ListOrdersByTableParams,
   ListOrdersByTableResponse,
 } from "@workspace/api-zod";
+import { emitOrderEvent, orderEvents, type OrderEventPayload } from "../lib/events";
 
 const router: IRouter = Router();
+
+router.get("/orders/stream", (req, res): void => {
+  res.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+    "X-Accel-Buffering": "no",
+  });
+  res.flushHeaders();
+
+  res.write(`: connected\n\n`);
+
+  const heartbeat = setInterval(() => {
+    res.write(`: ping\n\n`);
+  }, 25000);
+
+  const onEvent = (payload: OrderEventPayload): void => {
+    res.write(`event: order\ndata: ${JSON.stringify(payload)}\n\n`);
+  };
+
+  orderEvents.on("order", onEvent);
+
+  req.on("close", () => {
+    clearInterval(heartbeat);
+    orderEvents.off("order", onEvent);
+    res.end();
+  });
+});
 
 function rowToOrder(row: OrderRow) {
   return {
@@ -114,6 +143,13 @@ router.post("/orders", async (req, res): Promise<void> => {
     .returning();
 
   req.log.info({ orderId: row.id, table: row.tableNumber }, "Order created");
+  emitOrderEvent({
+    type: "created",
+    orderId: row.id,
+    tableNumber: row.tableNumber,
+    status: row.status,
+    at: new Date().toISOString(),
+  });
   res.status(201).json(rowToOrder(row));
 });
 
@@ -181,6 +217,14 @@ router.patch("/orders/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Order not found" });
     return;
   }
+
+  emitOrderEvent({
+    type: "updated",
+    orderId: row.id,
+    tableNumber: row.tableNumber,
+    status: row.status,
+    at: new Date().toISOString(),
+  });
 
   res.json(UpdateOrderStatusResponse.parse(rowToOrder(row)));
 });

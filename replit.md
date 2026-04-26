@@ -25,8 +25,12 @@ Includes an admin view with today's stats, top-selling items, and full menu CRUD
 
 ## Real-Time Behavior
 
-Critical queries (orders list, queue summary, table orders) refetch every 3–4 seconds.
-Mutations invalidate relevant queries so changes appear instantly across views.
+True push-based real-time via Server-Sent Events:
+- `GET /api/orders/stream` (api-server) — SSE endpoint emitting `order` events on create/update.
+- `artifacts/mo2men/src/hooks/use-order-events.ts` — frontend hook that subscribes, invalidates relevant React Query caches, and exposes an `onEvent` callback. Auto-reconnects on disconnect.
+- Customer `/order/:tableNumber` shows a live "مباشر" badge and toasts when their order moves to preparing/ready/served.
+- Barista `/barista` plays a chime + toast the instant a new order is created.
+- Polling kept as a low-frequency safety net (15s) for queue summary / orders list.
 
 ## Key Commands
 

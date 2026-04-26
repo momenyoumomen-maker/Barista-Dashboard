@@ -1,9 +1,12 @@
 import { useRoute, useLocation } from "wouter";
 import { useListOrdersByTable } from "@workspace/api-client-react";
 import { CustomerLayout } from "@/components/layout/customer-layout";
-import { Loader2, Clock, CheckCircle2, Coffee, Check, ArrowRight } from "lucide-react";
+import { Loader2, Clock, CheckCircle2, Coffee, Check, ArrowRight, Radio } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useOrderEvents } from "@/hooks/use-order-events";
+import { useToast } from "@/hooks/use-toast";
+import { useRef } from "react";
 
 const StatusIcon = ({ status }: { status: string }) => {
   switch (status) {
@@ -29,12 +32,33 @@ const StatusText = ({ status }: { status: string }) => {
 export default function OrderTracking() {
   const [, params] = useRoute("/order/:tableNumber");
   const tableNumber = params?.tableNumber;
+  const tableNum = tableNumber ? parseInt(tableNumber) : 0;
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const lastStatusByOrder = useRef<Record<number, string>>({});
 
   const { data: orders, isLoading } = useListOrdersByTable(
-    tableNumber ? parseInt(tableNumber) : 0,
-    { query: { enabled: !!tableNumber, refetchInterval: 3000 } }
+    tableNum,
+    { query: { enabled: !!tableNumber } },
   );
+
+  useOrderEvents({
+    tableNumber: tableNum,
+    onEvent: (event) => {
+      if (event.tableNumber !== tableNum) return;
+      if (event.type !== "updated") return;
+      const previous = lastStatusByOrder.current[event.orderId];
+      if (previous === event.status) return;
+      lastStatusByOrder.current[event.orderId] = event.status;
+      if (event.status === "preparing") {
+        toast({ title: "بدأ تحضير طلبك", description: `طلب #${event.orderId} الآن قيد التحضير` });
+      } else if (event.status === "ready") {
+        toast({ title: "طلبك جاهز!", description: `طلب #${event.orderId} جاهز للتقديم` });
+      } else if (event.status === "served") {
+        toast({ title: "تم تقديم طلبك", description: `بالهنا والشفا!` });
+      }
+    },
+  });
 
   const activeOrders = orders?.filter(o => o.status !== "served" && o.status !== "cancelled") || [];
 
@@ -52,7 +76,13 @@ export default function OrderTracking() {
     <CustomerLayout tableNumber={tableNumber}>
       <div className="flex-1 p-4 bg-muted/30">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold font-sans tracking-tight">طلباتك الحالية</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold font-sans tracking-tight">طلباتك الحالية</h2>
+            <span className="inline-flex items-center gap-1 text-xs text-green-700 dark:text-green-400 bg-green-500/10 px-2 py-1 rounded-full">
+              <Radio className="w-3 h-3 animate-pulse" />
+              مباشر
+            </span>
+          </div>
           <Button variant="outline" size="sm" onClick={() => setLocation(`/menu/${tableNumber}`)} className="rounded-xl font-bold gap-2">
             إضافة طلب جديد
             <ArrowRight className="w-4 h-4" />

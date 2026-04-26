@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Clock, Coffee, CheckCircle2, ChevronLeft, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useOrderEvents } from "@/hooks/use-order-events";
 
 const StatusColumns = ["pending", "preparing", "ready"] as const;
 type Status = typeof StatusColumns[number];
@@ -47,12 +48,24 @@ export default function BaristaDashboard() {
   }, []);
 
   const { data: orders, isLoading: isLoadingOrders } = useListOrders(
-    { activeOnly: true }, 
-    { query: { refetchInterval: 3000 } }
+    { activeOnly: true },
+    { query: { refetchInterval: 15000 } },
   );
 
   const { data: summary } = useGetQueueSummary({
-    query: { refetchInterval: 3000 }
+    query: { refetchInterval: 15000 },
+  });
+
+  useOrderEvents({
+    onEvent: (event) => {
+      if (event.type === "created") {
+        audioRef.current?.play().catch(() => undefined);
+        toast({
+          title: "طلب جديد!",
+          description: `طاولة #${event.tableNumber} — طلب #${event.orderId}`,
+        });
+      }
+    },
   });
 
   const updateStatus = useUpdateOrderStatus({
@@ -67,20 +80,6 @@ export default function BaristaDashboard() {
     }
   });
 
-  // Check for new pending orders to play sound
-  useEffect(() => {
-    if (summary) {
-      if (summary.pending > prevPendingCountRef.current && summary.pending > 0) {
-        // play a soft chime if available
-        audioRef.current?.play().catch(e => console.log("Audio play blocked", e));
-        toast({
-          title: "طلب جديد!",
-          description: "يوجد طلب جديد في قائمة الانتظار.",
-        });
-      }
-      prevPendingCountRef.current = summary.pending;
-    }
-  }, [summary, toast]);
 
   if (isLoadingOrders) {
     return (
