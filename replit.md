@@ -20,9 +20,9 @@ Includes an admin view with today's stats, top-selling items, and full menu CRUD
 - `/` — Customer table picker (1–20)
 - `/menu/:tableNumber` — Browse menu by category, manage cart, place order
 - `/order/:tableNumber` — Live status of this table's active orders
-- `/cashier` — Cashier point-of-sale: name-login screen → live shift dashboard with sales/order tiles → end-shift summary modal → returns to login for next cashier
+- `/cashier` — Cashier POS: name-login → live shift dashboard with sales/order tiles, a Tables panel (20 tables, occupied vs available, total per table), a "طلب جديد" full ordering dialog (table picker, searchable menu with qty +/-, cash/visa payment) → end-shift summary modal → returns to login for the next cashier. Orders are linked to the active shift; checking out a table marks all its active orders as served, applies cash/visa to any unpaid ones, and clears the table view.
 - `/barista` — Live Kanban dashboard for staff (pending → preparing → ready), with audio chime on new orders
-- `/admin` — Today's stats, top items, menu management (CRUD)
+- `/admin` — **Login-protected** (Username `Alalson`, Password `alalson2026`) — today's stats, top items, menu management (CRUD). Auth is held in `sessionStorage` by `components/admin-auth.tsx` (`AdminAuthGate`).
 
 ## Real-Time Behavior
 
@@ -45,8 +45,13 @@ True push-based real-time via Server-Sent Events:
 ## Schema
 
 - `menu_items`: id, name (Arabic), description, category, price, imageUrl, available, prepMinutes, createdAt
-- `orders`: id, tableNumber, customerName, status (pending|preparing|ready|served|cancelled), items (jsonb snapshot), totalPrice, notes, shiftId (FK → shifts), cashierName (denormalized snapshot), createdAt, updatedAt
+- `orders`: id, tableNumber, customerName, status (pending|preparing|ready|served|cancelled), items (jsonb snapshot), totalPrice, notes, paymentMethod (cash|visa|null), shiftId (FK → shifts), cashierName (denormalized snapshot), createdAt, updatedAt
 - `shifts`: id, cashierName, startedAt, endedAt (null while active), totalSales, ordersCount. A partial unique index enforces at most one active (endedAt IS NULL) shift at a time. New orders are auto-tagged with the active shift.
+
+## Table reset / checkout
+
+- `POST /api/tables/:tableNumber/checkout` — closes a table by setting `status = 'served'` on every active order for that table; optionally applies a `paymentMethod` to any unpaid ones (preserves existing payments via SQL `COALESCE`); returns `{ tableNumber, closedOrdersCount, totalCollected }`. Orders are NOT deleted — they remain in history for stats and reports.
+- The customer-facing `GET /api/orders/by-table/:tableNumber` now filters out both `served` and `cancelled` orders, so the customer view becomes empty (table = available) the moment the cashier checks it out. SSE events are emitted per closed order so all live views update instantly.
 
 ## Shift management
 

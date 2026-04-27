@@ -1,5 +1,8 @@
 import { useRoute, useLocation } from "wouter";
-import { useListOrdersByTable } from "@workspace/api-client-react";
+import {
+  useListOrdersByTable,
+  getListOrdersByTableQueryKey,
+} from "@workspace/api-client-react";
 import { CustomerLayout } from "@/components/layout/customer-layout";
 import { Loader2, Clock, CheckCircle2, Coffee, Check, ArrowRight, Radio } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,7 +42,12 @@ export default function OrderTracking() {
 
   const { data: orders, isLoading } = useListOrdersByTable(
     tableNum,
-    { query: { enabled: !!tableNumber } },
+    {
+      query: {
+        queryKey: getListOrdersByTableQueryKey(tableNum),
+        enabled: !!tableNumber,
+      },
+    },
   );
 
   useOrderEvents({

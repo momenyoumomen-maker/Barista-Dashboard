@@ -5,6 +5,7 @@
  * MO2men Coffee Shop API
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderInputPaymentMethod } from "./orderInputPaymentMethod";
 import type { OrderItemInput } from "./orderItemInput";
 
 export interface OrderInput {
@@ -12,4 +13,5 @@ export interface OrderInput {
   customerName?: string;
   items: OrderItemInput[];
   notes?: string;
+  paymentMethod?: OrderInputPaymentMethod;
 }

@@ -237,6 +237,32 @@ paths:
                 items:
                   $ref: "#/components/schemas/Order"
 
+  /tables/{tableNumber}/checkout:
+    post:
+      operationId: checkoutTable
+      tags: [orders]
+      summary: Mark all of a table's active orders as served (table reset)
+      description: Closes all active orders on the table, optionally setting a payment method on any unpaid ones, and clears the table for the next customer. Orders remain in history.
+      parameters:
+        - name: tableNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutTableInput"
+      responses:
+        "200":
+          description: Checkout result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutTableResult"
+
   /shifts/active:
     get:
       operationId: getActiveShift
@@ -507,6 +533,10 @@ components:
           type: number
         notes:
           type: string
+        paymentMethod:
+          type: string
+          enum: [cash, visa]
+          nullable: true
         shiftId:
           type: integer
           nullable: true
@@ -541,9 +571,34 @@ components:
             $ref: "#/components/schemas/OrderItemInput"
         notes:
           type: string
+        paymentMethod:
+          type: string
+          enum: [cash, visa]
       required:
         - tableNumber
         - items
+
+    CheckoutTableInput:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          enum: [cash, visa]
+          description: Optional payment method to apply to any unpaid orders being closed
+
+    CheckoutTableResult:
+      type: object
+      properties:
+        tableNumber:
+          type: integer
+        closedOrdersCount:
+          type: integer
+        totalCollected:
+          type: number
+      required:
+        - tableNumber
+        - closedOrdersCount
+        - totalCollected
 
     OrderStatusUpdate:
       type: object

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OrderItem } from "./orderItem";
+import type { OrderPaymentMethod } from "./orderPaymentMethod";
 import type { OrderStatus } from "./orderStatus";
 
 export interface Order {
@@ -16,6 +17,7 @@ export interface Order {
   items: OrderItem[];
   totalPrice: number;
   notes?: string;
+  paymentMethod?: OrderPaymentMethod;
   shiftId?: number | null;
   cashierName?: string | null;
   createdAt: Date;

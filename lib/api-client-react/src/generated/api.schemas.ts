@@ -72,6 +72,15 @@ export const OrderStatus = {
   cancelled: "cancelled",
 } as const;
 
+export type OrderPaymentMethod =
+  | (typeof OrderPaymentMethod)[keyof typeof OrderPaymentMethod]
+  | null;
+
+export const OrderPaymentMethod = {
+  cash: "cash",
+  visa: "visa",
+} as const;
+
 export interface Order {
   id: number;
   tableNumber: number;
@@ -80,17 +89,49 @@ export interface Order {
   items: OrderItem[];
   totalPrice: number;
   notes?: string;
+  paymentMethod?: OrderPaymentMethod;
   shiftId?: number | null;
   cashierName?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
+export type OrderInputPaymentMethod =
+  (typeof OrderInputPaymentMethod)[keyof typeof OrderInputPaymentMethod];
+
+export const OrderInputPaymentMethod = {
+  cash: "cash",
+  visa: "visa",
+} as const;
+
 export interface OrderInput {
   tableNumber: number;
   customerName?: string;
   items: OrderItemInput[];
   notes?: string;
+  paymentMethod?: OrderInputPaymentMethod;
+}
+
+/**
+ * Optional payment method to apply to any unpaid orders being closed
+ */
+export type CheckoutTableInputPaymentMethod =
+  (typeof CheckoutTableInputPaymentMethod)[keyof typeof CheckoutTableInputPaymentMethod];
+
+export const CheckoutTableInputPaymentMethod = {
+  cash: "cash",
+  visa: "visa",
+} as const;
+
+export interface CheckoutTableInput {
+  /** Optional payment method to apply to any unpaid orders being closed */
+  paymentMethod?: CheckoutTableInputPaymentMethod;
+}
+
+export interface CheckoutTableResult {
+  tableNumber: number;
+  closedOrdersCount: number;
+  totalCollected: number;
 }
 
 export type OrderStatusUpdateStatus =

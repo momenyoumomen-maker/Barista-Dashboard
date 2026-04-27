@@ -8,6 +8,9 @@
 
 export * from "./activeShiftResponse";
 export * from "./categoryCount";
+export * from "./checkoutTableInput";
+export * from "./checkoutTableInputPaymentMethod";
+export * from "./checkoutTableResult";
 export * from "./errorResponse";
 export * from "./getPopularItemsParams";
 export * from "./healthStatus";
@@ -19,8 +22,10 @@ export * from "./menuItemInput";
 export * from "./menuItemUpdate";
 export * from "./order";
 export * from "./orderInput";
+export * from "./orderInputPaymentMethod";
 export * from "./orderItem";
 export * from "./orderItemInput";
+export * from "./orderPaymentMethod";
 export * from "./orderStatus";
 export * from "./orderStatusUpdate";
 export * from "./orderStatusUpdateStatus";

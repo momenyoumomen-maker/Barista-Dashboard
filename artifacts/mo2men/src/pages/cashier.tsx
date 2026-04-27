@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useOrderEvents } from "@/hooks/use-order-events";
 import { useCashier } from "@/components/cashier-context";
+import { CashierNewOrderDialog } from "@/components/cashier-new-order";
+import { CashierTablesPanel } from "@/components/cashier-tables-panel";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +30,7 @@ import {
   Loader2,
   LogIn,
   LogOut,
+  Plus,
   Receipt,
   Timer,
   User,
@@ -56,7 +59,10 @@ export default function CashierPage() {
   const { rememberShift, forgetShift } = useCashier();
 
   const { data: activeData, isLoading: isLoadingActive } = useGetActiveShift({
-    query: { refetchInterval: 30000 },
+    query: {
+      queryKey: getGetActiveShiftQueryKey(),
+      refetchInterval: 30000,
+    },
   });
   const activeShift = activeData?.shift ?? null;
 
@@ -212,6 +218,7 @@ function CashierDashboard({
   const [now, setNow] = useState<number>(Date.now());
   const [endSummary, setEndSummary] = useState<ShiftSummary | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [newOrderOpen, setNewOrderOpen] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30000);
@@ -219,7 +226,10 @@ function CashierDashboard({
   }, []);
 
   const { data: orders } = useListOrders(undefined, {
-    query: { refetchInterval: 15000 },
+    query: {
+      queryKey: getListOrdersQueryKey(),
+      refetchInterval: 15000,
+    },
   });
 
   const shiftOrders = useMemo<Order[]>(
@@ -290,15 +300,24 @@ function CashierDashboard({
             </p>
           </div>
         </div>
-        <Button
-          variant="destructive"
-          className="h-12 rounded-2xl font-bold gap-2 px-5"
-          onClick={() => setConfirmEnd(true)}
-          disabled={endShift.isPending}
-        >
-          <LogOut className="w-5 h-5" />
-          إنهاء الوردية
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            className="h-12 rounded-2xl font-bold gap-2 px-5"
+            onClick={() => setNewOrderOpen(true)}
+          >
+            <Plus className="w-5 h-5" />
+            طلب جديد
+          </Button>
+          <Button
+            variant="destructive"
+            className="h-12 rounded-2xl font-bold gap-2 px-5"
+            onClick={() => setConfirmEnd(true)}
+            disabled={endShift.isPending}
+          >
+            <LogOut className="w-5 h-5" />
+            إنهاء الوردية
+          </Button>
+        </div>
       </div>
 
       {/* Live stat tiles */}
@@ -328,6 +347,9 @@ function CashierDashboard({
           value={formatDuration(elapsedSeconds)}
         />
       </div>
+
+      {/* Tables panel */}
+      <CashierTablesPanel orders={orders ?? []} />
 
       {/* Orders table */}
       <div className="bg-card border border-border rounded-3xl shadow-sm overflow-hidden">
@@ -395,6 +417,13 @@ function CashierDashboard({
           </div>
         )}
       </div>
+
+      {/* New order dialog */}
+      <CashierNewOrderDialog
+        open={newOrderOpen}
+        onOpenChange={setNewOrderOpen}
+        onCreated={() => {}}
+      />
 
       {/* Confirm end shift */}
       <Dialog open={confirmEnd} onOpenChange={setConfirmEnd}>

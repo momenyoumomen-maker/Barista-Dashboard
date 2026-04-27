@@ -4,7 +4,7 @@ import { useListMenu, useListCategories, useCreateOrder } from "@workspace/api-c
 import { CustomerLayout } from "@/components/layout/customer-layout";
 import { useCart } from "@/components/cart-context";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, ShoppingBag, Loader2, ArrowRight } from "lucide-react";
+import { Plus, Minus, ShoppingBag, Loader2, ArrowRight, Coffee } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";

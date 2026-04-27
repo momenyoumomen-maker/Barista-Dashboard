@@ -19,6 +19,8 @@ import type {
 import type {
   ActiveShiftResponse,
   CategoryCount,
+  CheckoutTableInput,
+  CheckoutTableResult,
   ErrorResponse,
   GetPopularItemsParams,
   HealthStatus,
@@ -989,6 +991,94 @@ export function useListOrdersByTable<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Closes all active orders on the table, optionally setting a payment method on any unpaid ones, and clears the table for the next customer. Orders remain in history.
+ * @summary Mark all of a table's active orders as served (table reset)
+ */
+export const getCheckoutTableUrl = (tableNumber: number) => {
+  return `/api/tables/${tableNumber}/checkout`;
+};
+
+export const checkoutTable = async (
+  tableNumber: number,
+  checkoutTableInput?: CheckoutTableInput,
+  options?: RequestInit,
+): Promise<CheckoutTableResult> => {
+  return customFetch<CheckoutTableResult>(getCheckoutTableUrl(tableNumber), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(checkoutTableInput),
+  });
+};
+
+export const getCheckoutTableMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof checkoutTable>>,
+    TError,
+    { tableNumber: number; data: BodyType<CheckoutTableInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof checkoutTable>>,
+  TError,
+  { tableNumber: number; data: BodyType<CheckoutTableInput> },
+  TContext
+> => {
+  const mutationKey = ["checkoutTable"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof checkoutTable>>,
+    { tableNumber: number; data: BodyType<CheckoutTableInput> }
+  > = (props) => {
+    const { tableNumber, data } = props ?? {};
+
+    return checkoutTable(tableNumber, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CheckoutTableMutationResult = NonNullable<
+  Awaited<ReturnType<typeof checkoutTable>>
+>;
+export type CheckoutTableMutationBody = BodyType<CheckoutTableInput>;
+export type CheckoutTableMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Mark all of a table's active orders as served (table reset)
+ */
+export const useCheckoutTable = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof checkoutTable>>,
+    TError,
+    { tableNumber: number; data: BodyType<CheckoutTableInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof checkoutTable>>,
+  TError,
+  { tableNumber: number; data: BodyType<CheckoutTableInput> },
+  TContext
+> => {
+  return useMutation(getCheckoutTableMutationOptions(options));
+};
 
 /**
  * @summary Get the currently active shift, if any

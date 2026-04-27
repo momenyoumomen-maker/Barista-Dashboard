@@ -92,11 +92,19 @@ export default function BaristaDashboard() {
 
   const { data: orders, isLoading: isLoadingOrders } = useListOrders(
     { activeOnly: true },
-    { query: { refetchInterval: 15000 } },
+    {
+      query: {
+        queryKey: getListOrdersQueryKey({ activeOnly: true }),
+        refetchInterval: 15000,
+      },
+    },
   );
 
   const { data: summary } = useGetQueueSummary({
-    query: { refetchInterval: 15000 },
+    query: {
+      queryKey: getGetQueueSummaryQueryKey(),
+      refetchInterval: 15000,
+    },
   });
 
   useOrderEvents({

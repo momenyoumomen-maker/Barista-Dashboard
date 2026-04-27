@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, eq, inArray, ne, notInArray, desc } from "drizzle-orm";
+import { and, eq, inArray, notInArray, desc, sql } from "drizzle-orm";
 import {
   db,
   ordersTable,
@@ -18,6 +18,9 @@ import {
   UpdateOrderStatusResponse,
   ListOrdersByTableParams,
   ListOrdersByTableResponse,
+  CheckoutTableParams,
+  CheckoutTableBody,
+  CheckoutTableResponse,
 } from "@workspace/api-zod";
 import { emitOrderEvent, orderEvents, type OrderEventPayload } from "../lib/events";
 import { getActiveShiftRow } from "./shifts";
@@ -61,6 +64,7 @@ function rowToOrder(row: OrderRow) {
     items: row.items,
     totalPrice: Number(row.totalPrice),
     notes: row.notes ?? undefined,
+    paymentMethod: row.paymentMethod ?? null,
     shiftId: row.shiftId ?? null,
     cashierName: row.cashierName ?? null,
     createdAt: row.createdAt,
@@ -144,6 +148,7 @@ router.post("/orders", async (req, res): Promise<void> => {
       items: snapshots,
       totalPrice: total.toFixed(2),
       notes: parsed.data.notes ?? null,
+      paymentMethod: parsed.data.paymentMethod ?? null,
       shiftId: activeShift?.id ?? null,
       cashierName: activeShift?.cashierName ?? null,
     })
@@ -173,13 +178,92 @@ router.get("/orders/by-table/:tableNumber", async (req, res): Promise<void> => {
     .where(
       and(
         eq(ordersTable.tableNumber, params.data.tableNumber),
-        ne(ordersTable.status, "cancelled"),
+        notInArray(ordersTable.status, ["served", "cancelled"]),
       ),
     )
     .orderBy(desc(ordersTable.createdAt));
 
   res.json(ListOrdersByTableResponse.parse(rows.map(rowToOrder)));
 });
+
+router.post(
+  "/tables/:tableNumber/checkout",
+  async (req, res): Promise<void> => {
+    const params = CheckoutTableParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+
+    const body = CheckoutTableBody.safeParse(req.body ?? {});
+    if (!body.success) {
+      res.status(400).json({ error: body.error.message });
+      return;
+    }
+
+    const tableNumber = params.data.tableNumber;
+    const paymentMethod = body.data.paymentMethod;
+
+    const activeRows = await db
+      .select()
+      .from(ordersTable)
+      .where(
+        and(
+          eq(ordersTable.tableNumber, tableNumber),
+          notInArray(ordersTable.status, ["served", "cancelled"]),
+        ),
+      );
+
+    if (activeRows.length === 0) {
+      res.json(
+        CheckoutTableResponse.parse({
+          tableNumber,
+          closedOrdersCount: 0,
+          totalCollected: 0,
+        }),
+      );
+      return;
+    }
+
+    const ids = activeRows.map((r) => r.id);
+    const updated = await db
+      .update(ordersTable)
+      .set({
+        status: "served",
+        paymentMethod: paymentMethod
+          ? paymentMethod
+          : sql`COALESCE(${ordersTable.paymentMethod}, ${"cash"})`,
+        updatedAt: new Date(),
+      })
+      .where(inArray(ordersTable.id, ids))
+      .returning();
+
+    let total = 0;
+    for (const row of updated) {
+      total += Number(row.totalPrice);
+      emitOrderEvent({
+        type: "updated",
+        orderId: row.id,
+        tableNumber: row.tableNumber,
+        status: row.status,
+        at: new Date().toISOString(),
+      });
+    }
+
+    req.log.info(
+      { tableNumber, count: updated.length, paymentMethod },
+      "Table checked out",
+    );
+
+    res.json(
+      CheckoutTableResponse.parse({
+        tableNumber,
+        closedOrdersCount: updated.length,
+        totalCollected: Number(total.toFixed(2)),
+      }),
+    );
+  },
+);
 
 router.get("/orders/:id", async (req, res): Promise<void> => {
   const params = GetOrderParams.safeParse(req.params);

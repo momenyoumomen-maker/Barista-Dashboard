@@ -16,6 +16,8 @@ export type OrderStatus =
   | "served"
   | "cancelled";
 
+export type PaymentMethod = "cash" | "visa";
+
 export interface OrderItemSnapshot {
   menuItemId: number;
   name: string;
@@ -32,6 +34,7 @@ export const ordersTable = pgTable("orders", {
   items: jsonb("items").$type<OrderItemSnapshot[]>().notNull(),
   totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(),
   notes: text("notes"),
+  paymentMethod: text("payment_method").$type<PaymentMethod>(),
   shiftId: integer("shift_id").references(() => shiftsTable.id, {
     onDelete: "set null",
   }),

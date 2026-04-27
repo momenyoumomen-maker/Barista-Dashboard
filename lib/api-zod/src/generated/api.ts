@@ -123,6 +123,7 @@ export const ListOrdersResponseItem = zod.object({
   ),
   totalPrice: zod.number(),
   notes: zod.string().optional(),
+  paymentMethod: zod.enum(["cash", "visa"]).nullish(),
   shiftId: zod.number().nullish(),
   cashierName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
@@ -144,6 +145,7 @@ export const CreateOrderBody = zod.object({
     }),
   ),
   notes: zod.string().optional(),
+  paymentMethod: zod.enum(["cash", "visa"]).optional(),
 });
 
 /**
@@ -169,6 +171,7 @@ export const GetOrderResponse = zod.object({
   ),
   totalPrice: zod.number(),
   notes: zod.string().optional(),
+  paymentMethod: zod.enum(["cash", "visa"]).nullish(),
   shiftId: zod.number().nullish(),
   cashierName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
@@ -202,6 +205,7 @@ export const UpdateOrderStatusResponse = zod.object({
   ),
   totalPrice: zod.number(),
   notes: zod.string().optional(),
+  paymentMethod: zod.enum(["cash", "visa"]).nullish(),
   shiftId: zod.number().nullish(),
   cashierName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
@@ -231,6 +235,7 @@ export const ListOrdersByTableResponseItem = zod.object({
   ),
   totalPrice: zod.number(),
   notes: zod.string().optional(),
+  paymentMethod: zod.enum(["cash", "visa"]).nullish(),
   shiftId: zod.number().nullish(),
   cashierName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
@@ -239,6 +244,29 @@ export const ListOrdersByTableResponseItem = zod.object({
 export const ListOrdersByTableResponse = zod.array(
   ListOrdersByTableResponseItem,
 );
+
+/**
+ * Closes all active orders on the table, optionally setting a payment method on any unpaid ones, and clears the table for the next customer. Orders remain in history.
+ * @summary Mark all of a table's active orders as served (table reset)
+ */
+export const CheckoutTableParams = zod.object({
+  tableNumber: zod.coerce.number(),
+});
+
+export const CheckoutTableBody = zod.object({
+  paymentMethod: zod
+    .enum(["cash", "visa"])
+    .optional()
+    .describe(
+      "Optional payment method to apply to any unpaid orders being closed",
+    ),
+});
+
+export const CheckoutTableResponse = zod.object({
+  tableNumber: zod.number(),
+  closedOrdersCount: zod.number(),
+  totalCollected: zod.number(),
+});
 
 /**
  * @summary Get the currently active shift, if any

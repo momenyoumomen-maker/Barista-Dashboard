@@ -13,6 +13,7 @@ import OrderTracking from "@/pages/order";
 import BaristaDashboard from "@/pages/barista";
 import AdminDashboard from "@/pages/admin";
 import CashierPage from "@/pages/cashier";
+import { AdminAuthGate } from "@/components/admin-auth";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +25,11 @@ function Router() {
       <Route path="/order/:tableNumber" component={OrderTracking} />
       <Route path="/barista" component={BaristaDashboard} />
       <Route path="/cashier" component={CashierPage} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin">
+        <AdminAuthGate>
+          <AdminDashboard />
+        </AdminAuthGate>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
