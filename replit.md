@@ -20,6 +20,7 @@ Includes an admin view with today's stats, top-selling items, and full menu CRUD
 - `/` — Customer table picker (1–20)
 - `/menu/:tableNumber` — Browse menu by category, manage cart, place order
 - `/order/:tableNumber` — Live status of this table's active orders
+- `/cashier` — Cashier point-of-sale: name-login screen → live shift dashboard with sales/order tiles → end-shift summary modal → returns to login for next cashier
 - `/barista` — Live Kanban dashboard for staff (pending → preparing → ready), with audio chime on new orders
 - `/admin` — Today's stats, top items, menu management (CRUD)
 
@@ -44,6 +45,14 @@ True push-based real-time via Server-Sent Events:
 ## Schema
 
 - `menu_items`: id, name (Arabic), description, category, price, imageUrl, available, prepMinutes, createdAt
-- `orders`: id, tableNumber, customerName, status (pending|preparing|ready|served|cancelled), items (jsonb snapshot), totalPrice, notes, createdAt, updatedAt
+- `orders`: id, tableNumber, customerName, status (pending|preparing|ready|served|cancelled), items (jsonb snapshot), totalPrice, notes, shiftId (FK → shifts), cashierName (denormalized snapshot), createdAt, updatedAt
+- `shifts`: id, cashierName, startedAt, endedAt (null while active), totalSales, ordersCount. A partial unique index enforces at most one active (endedAt IS NULL) shift at a time. New orders are auto-tagged with the active shift.
+
+## Shift management
+
+- `POST /api/shifts` — start a shift (`{ cashierName }`); returns 409 if one is already active
+- `GET /api/shifts/active` — returns `{ shift }` (null when no shift is active); `totalSales` and `ordersCount` are computed live from orders
+- `POST /api/shifts/:id/end` — closes the shift, persists totals, returns full summary
+- `GET /api/shifts/:id` — returns the shift summary at any time
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

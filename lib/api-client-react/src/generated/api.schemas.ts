@@ -80,6 +80,8 @@ export interface Order {
   items: OrderItem[];
   totalPrice: number;
   notes?: string;
+  shiftId?: number | null;
+  cashierName?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -119,6 +121,40 @@ export interface PopularItem {
   name: string;
   category: string;
   quantitySold: number;
+}
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export interface Shift {
+  id: number;
+  cashierName: string;
+  startedAt: string;
+  endedAt?: string | null;
+  totalSales: number;
+  ordersCount: number;
+}
+
+export interface ActiveShiftResponse {
+  shift: Shift | null;
+}
+
+export interface StartShiftInput {
+  /** @minLength 1 */
+  cashierName: string;
+}
+
+export interface ShiftSummary {
+  id: number;
+  cashierName: string;
+  startedAt: string;
+  endedAt?: string | null;
+  totalSales: number;
+  ordersCount: number;
+  servedOrders: number;
+  cancelledOrders: number;
+  durationSeconds: number;
 }
 
 export interface QueueSummary {

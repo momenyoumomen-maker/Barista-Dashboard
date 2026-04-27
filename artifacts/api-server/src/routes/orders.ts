@@ -20,6 +20,7 @@ import {
   ListOrdersByTableResponse,
 } from "@workspace/api-zod";
 import { emitOrderEvent, orderEvents, type OrderEventPayload } from "../lib/events";
+import { getActiveShiftRow } from "./shifts";
 
 const router: IRouter = Router();
 
@@ -60,6 +61,8 @@ function rowToOrder(row: OrderRow) {
     items: row.items,
     totalPrice: Number(row.totalPrice),
     notes: row.notes ?? undefined,
+    shiftId: row.shiftId ?? null,
+    cashierName: row.cashierName ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -130,6 +133,8 @@ router.post("/orders", async (req, res): Promise<void> => {
     total += unitPrice * item.quantity;
   }
 
+  const activeShift = await getActiveShiftRow();
+
   const [row] = await db
     .insert(ordersTable)
     .values({
@@ -139,6 +144,8 @@ router.post("/orders", async (req, res): Promise<void> => {
       items: snapshots,
       totalPrice: total.toFixed(2),
       notes: parsed.data.notes ?? null,
+      shiftId: activeShift?.id ?? null,
+      cashierName: activeShift?.cashierName ?? null,
     })
     .returning();
 

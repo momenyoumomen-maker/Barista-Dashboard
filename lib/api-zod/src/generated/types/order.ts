@@ -16,6 +16,8 @@ export interface Order {
   items: OrderItem[];
   totalPrice: number;
   notes?: string;
+  shiftId?: number | null;
+  cashierName?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

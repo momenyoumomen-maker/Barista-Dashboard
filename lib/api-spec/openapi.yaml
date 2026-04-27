@@ -16,6 +16,8 @@ tags:
     description: Customer orders
   - name: stats
     description: Live shop statistics
+  - name: shifts
+    description: Cashier shifts
 paths:
   /healthz:
     get:
@@ -235,6 +237,82 @@ paths:
                 items:
                   $ref: "#/components/schemas/Order"
 
+  /shifts/active:
+    get:
+      operationId: getActiveShift
+      tags: [shifts]
+      summary: Get the currently active shift, if any
+      responses:
+        "200":
+          description: Active shift or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActiveShiftResponse"
+
+  /shifts:
+    post:
+      operationId: startShift
+      tags: [shifts]
+      summary: Start a new cashier shift
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartShiftInput"
+      responses:
+        "201":
+          description: Created shift
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shift"
+        "409":
+          description: A shift is already active
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /shifts/{id}:
+    get:
+      operationId: getShift
+      tags: [shifts]
+      summary: Get a shift with its summary
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Shift summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShiftSummary"
+
+  /shifts/{id}/end:
+    post:
+      operationId: endShift
+      tags: [shifts]
+      summary: End a shift and return its summary
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ended shift summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShiftSummary"
+
   /stats/today:
     get:
       operationId: getTodayStats
@@ -429,6 +507,12 @@ components:
           type: number
         notes:
           type: string
+        shiftId:
+          type: integer
+          nullable: true
+        cashierName:
+          type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -506,6 +590,91 @@ components:
         - name
         - category
         - quantitySold
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Shift:
+      type: object
+      properties:
+        id:
+          type: integer
+        cashierName:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+        totalSales:
+          type: number
+        ordersCount:
+          type: integer
+      required:
+        - id
+        - cashierName
+        - startedAt
+        - totalSales
+        - ordersCount
+
+    ActiveShiftResponse:
+      type: object
+      properties:
+        shift:
+          $ref: "#/components/schemas/Shift"
+          nullable: true
+      required:
+        - shift
+
+    StartShiftInput:
+      type: object
+      properties:
+        cashierName:
+          type: string
+          minLength: 1
+      required:
+        - cashierName
+
+    ShiftSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        cashierName:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+        totalSales:
+          type: number
+        ordersCount:
+          type: integer
+        servedOrders:
+          type: integer
+        cancelledOrders:
+          type: integer
+        durationSeconds:
+          type: integer
+      required:
+        - id
+        - cashierName
+        - startedAt
+        - totalSales
+        - ordersCount
+        - servedOrders
+        - cancelledOrders
+        - durationSeconds
 
     QueueSummary:
       type: object

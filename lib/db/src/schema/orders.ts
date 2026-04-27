@@ -7,6 +7,7 @@ import {
   timestamp,
   jsonb,
 } from "drizzle-orm/pg-core";
+import { shiftsTable } from "./shifts";
 
 export type OrderStatus =
   | "pending"
@@ -31,6 +32,10 @@ export const ordersTable = pgTable("orders", {
   items: jsonb("items").$type<OrderItemSnapshot[]>().notNull(),
   totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(),
   notes: text("notes"),
+  shiftId: integer("shift_id").references(() => shiftsTable.id, {
+    onDelete: "set null",
+  }),
+  cashierName: text("cashier_name"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

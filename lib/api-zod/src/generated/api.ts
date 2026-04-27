@@ -123,6 +123,8 @@ export const ListOrdersResponseItem = zod.object({
   ),
   totalPrice: zod.number(),
   notes: zod.string().optional(),
+  shiftId: zod.number().nullish(),
+  cashierName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -167,6 +169,8 @@ export const GetOrderResponse = zod.object({
   ),
   totalPrice: zod.number(),
   notes: zod.string().optional(),
+  shiftId: zod.number().nullish(),
+  cashierName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -198,6 +202,8 @@ export const UpdateOrderStatusResponse = zod.object({
   ),
   totalPrice: zod.number(),
   notes: zod.string().optional(),
+  shiftId: zod.number().nullish(),
+  cashierName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -225,12 +231,76 @@ export const ListOrdersByTableResponseItem = zod.object({
   ),
   totalPrice: zod.number(),
   notes: zod.string().optional(),
+  shiftId: zod.number().nullish(),
+  cashierName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
 export const ListOrdersByTableResponse = zod.array(
   ListOrdersByTableResponseItem,
 );
+
+/**
+ * @summary Get the currently active shift, if any
+ */
+export const GetActiveShiftResponse = zod.object({
+  shift: zod
+    .object({
+      id: zod.number(),
+      cashierName: zod.string(),
+      startedAt: zod.coerce.date(),
+      endedAt: zod.coerce.date().nullish(),
+      totalSales: zod.number(),
+      ordersCount: zod.number(),
+    })
+    .nullable(),
+});
+
+/**
+ * @summary Start a new cashier shift
+ */
+
+export const StartShiftBody = zod.object({
+  cashierName: zod.string().min(1),
+});
+
+/**
+ * @summary Get a shift with its summary
+ */
+export const GetShiftParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetShiftResponse = zod.object({
+  id: zod.number(),
+  cashierName: zod.string(),
+  startedAt: zod.coerce.date(),
+  endedAt: zod.coerce.date().nullish(),
+  totalSales: zod.number(),
+  ordersCount: zod.number(),
+  servedOrders: zod.number(),
+  cancelledOrders: zod.number(),
+  durationSeconds: zod.number(),
+});
+
+/**
+ * @summary End a shift and return its summary
+ */
+export const EndShiftParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const EndShiftResponse = zod.object({
+  id: zod.number(),
+  cashierName: zod.string(),
+  startedAt: zod.coerce.date(),
+  endedAt: zod.coerce.date().nullish(),
+  totalSales: zod.number(),
+  ordersCount: zod.number(),
+  servedOrders: zod.number(),
+  cancelledOrders: zod.number(),
+  durationSeconds: zod.number(),
+});
 
 /**
  * @summary Get today's shop statistics

@@ -6,7 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./activeShiftResponse";
 export * from "./categoryCount";
+export * from "./errorResponse";
 export * from "./getPopularItemsParams";
 export * from "./healthStatus";
 export * from "./listMenuParams";
@@ -24,4 +26,7 @@ export * from "./orderStatusUpdate";
 export * from "./orderStatusUpdateStatus";
 export * from "./popularItem";
 export * from "./queueSummary";
+export * from "./shift";
+export * from "./shiftSummary";
+export * from "./startShiftInput";
 export * from "./todayStats";

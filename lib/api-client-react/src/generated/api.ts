@@ -17,7 +17,9 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ActiveShiftResponse,
   CategoryCount,
+  ErrorResponse,
   GetPopularItemsParams,
   HealthStatus,
   ListMenuParams,
@@ -30,6 +32,9 @@ import type {
   OrderStatusUpdate,
   PopularItem,
   QueueSummary,
+  Shift,
+  ShiftSummary,
+  StartShiftInput,
   TodayStats,
 } from "./api.schemas";
 
@@ -984,6 +989,336 @@ export function useListOrdersByTable<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get the currently active shift, if any
+ */
+export const getGetActiveShiftUrl = () => {
+  return `/api/shifts/active`;
+};
+
+export const getActiveShift = async (
+  options?: RequestInit,
+): Promise<ActiveShiftResponse> => {
+  return customFetch<ActiveShiftResponse>(getGetActiveShiftUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetActiveShiftQueryKey = () => {
+  return [`/api/shifts/active`] as const;
+};
+
+export const getGetActiveShiftQueryOptions = <
+  TData = Awaited<ReturnType<typeof getActiveShift>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getActiveShift>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetActiveShiftQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getActiveShift>>> = ({
+    signal,
+  }) => getActiveShift({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getActiveShift>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetActiveShiftQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getActiveShift>>
+>;
+export type GetActiveShiftQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get the currently active shift, if any
+ */
+
+export function useGetActiveShift<
+  TData = Awaited<ReturnType<typeof getActiveShift>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getActiveShift>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetActiveShiftQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Start a new cashier shift
+ */
+export const getStartShiftUrl = () => {
+  return `/api/shifts`;
+};
+
+export const startShift = async (
+  startShiftInput: StartShiftInput,
+  options?: RequestInit,
+): Promise<Shift> => {
+  return customFetch<Shift>(getStartShiftUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(startShiftInput),
+  });
+};
+
+export const getStartShiftMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startShift>>,
+    TError,
+    { data: BodyType<StartShiftInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof startShift>>,
+  TError,
+  { data: BodyType<StartShiftInput> },
+  TContext
+> => {
+  const mutationKey = ["startShift"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof startShift>>,
+    { data: BodyType<StartShiftInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return startShift(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StartShiftMutationResult = NonNullable<
+  Awaited<ReturnType<typeof startShift>>
+>;
+export type StartShiftMutationBody = BodyType<StartShiftInput>;
+export type StartShiftMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Start a new cashier shift
+ */
+export const useStartShift = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startShift>>,
+    TError,
+    { data: BodyType<StartShiftInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof startShift>>,
+  TError,
+  { data: BodyType<StartShiftInput> },
+  TContext
+> => {
+  return useMutation(getStartShiftMutationOptions(options));
+};
+
+/**
+ * @summary Get a shift with its summary
+ */
+export const getGetShiftUrl = (id: number) => {
+  return `/api/shifts/${id}`;
+};
+
+export const getShift = async (
+  id: number,
+  options?: RequestInit,
+): Promise<ShiftSummary> => {
+  return customFetch<ShiftSummary>(getGetShiftUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetShiftQueryKey = (id: number) => {
+  return [`/api/shifts/${id}`] as const;
+};
+
+export const getGetShiftQueryOptions = <
+  TData = Awaited<ReturnType<typeof getShift>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getShift>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetShiftQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getShift>>> = ({
+    signal,
+  }) => getShift(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getShift>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
+};
+
+export type GetShiftQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getShift>>
+>;
+export type GetShiftQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get a shift with its summary
+ */
+
+export function useGetShift<
+  TData = Awaited<ReturnType<typeof getShift>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getShift>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetShiftQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary End a shift and return its summary
+ */
+export const getEndShiftUrl = (id: number) => {
+  return `/api/shifts/${id}/end`;
+};
+
+export const endShift = async (
+  id: number,
+  options?: RequestInit,
+): Promise<ShiftSummary> => {
+  return customFetch<ShiftSummary>(getEndShiftUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getEndShiftMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof endShift>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof endShift>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["endShift"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof endShift>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return endShift(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type EndShiftMutationResult = NonNullable<
+  Awaited<ReturnType<typeof endShift>>
+>;
+
+export type EndShiftMutationError = ErrorType<unknown>;
+
+/**
+ * @summary End a shift and return its summary
+ */
+export const useEndShift = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof endShift>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof endShift>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getEndShiftMutationOptions(options));
+};
 
 /**
  * @summary Get today's shop statistics

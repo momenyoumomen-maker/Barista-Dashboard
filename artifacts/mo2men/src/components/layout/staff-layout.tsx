@@ -1,12 +1,13 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Coffee, LayoutDashboard } from "lucide-react";
+import { Coffee, LayoutDashboard, Receipt } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 
 export function StaffLayout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
 
   const navItems = [
+    { href: "/cashier", label: "الكاشير", icon: Receipt },
     { href: "/barista", label: "الباريستا", icon: Coffee },
     { href: "/admin", label: "الإدارة", icon: LayoutDashboard },
   ];
